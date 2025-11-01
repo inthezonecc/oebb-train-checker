@@ -1,0 +1,88 @@
+# ÖBB Train Checker Sensors Configuration
+# Include this in your configuration.yaml using:
+# sensor: !include oebb-sensors.yaml
+# 
+# OR for template sensors:
+# template: !include oebb-sensors.yaml
+# 
+# OR include it all in one:
+# !include oebb-sensors.yaml
+
+# REST Sensor for all trains
+- platform: rest
+  name: OEBB Trains
+  resource: http://localhost:3000/api/trains
+  scan_interval: 300  # Update every 5 minutes
+  json_attributes:
+    - trains
+    - from
+    - to
+    - count
+    - lastUpdate
+    - status
+  value_template: "{{ value_json.status }}"
+
+# Sensor for next train only
+- platform: rest
+  name: OEBB Next Train
+  resource: http://localhost:3000/api/trains/next
+  scan_interval: 300
+  json_attributes:
+    - train
+    - lastUpdate
+    - status
+  value_template: >
+    {% if value_json.train %}
+      {{ value_json.train.line }} at {{ as_timestamp(value_json.train.departure.time) | timestamp_custom('%H:%M') }}
+    {% else %}
+      No trains
+    {% endif %}
+
+# Individual sensors for next train details
+- platform: rest
+  name: OEBB Next Train Line
+  resource: http://localhost:3000/api/trains/next
+  scan_interval: 300
+  value_template: "{{ value_json.train.line | default('N/A') }}"
+
+- platform: rest
+  name: OEBB Next Train Departure
+  resource: http://localhost:3000/api/trains/next
+  scan_interval: 300
+  value_template: >
+    {% if value_json.train and value_json.train.departure.time %}
+      {{ as_timestamp(value_json.train.departure.time) | timestamp_custom('%H:%M') }}
+    {% else %}
+      N/A
+    {% endif %}
+
+- platform: rest
+  name: OEBB Next Train Delay
+  resource: http://localhost:3000/api/trains/next
+  scan_interval: 300
+  unit_of_measurement: "min"
+  value_template: "{{ value_json.train.departure.delayMinutes | default(0) }}"
+
+- platform: rest
+  name: OEBB Next Train Cancelled
+  resource: http://localhost:3000/api/trains/next
+  scan_interval: 300
+  value_template: "{{ value_json.train.cancelled | default(false) }}"
+
+- platform: rest
+  name: OEBB Next Train Platform
+  resource: http://localhost:3000/api/trains/next
+  scan_interval: 300
+  value_template: "{{ value_json.train.departure.platform | default('N/A') }}"
+
+- platform: rest
+  name: OEBB Next Train Arrival
+  resource: http://localhost:3000/api/trains/next
+  scan_interval: 300
+  value_template: >
+    {% if value_json.train and value_json.train.arrival.time %}
+      {{ as_timestamp(value_json.train.arrival.time) | timestamp_custom('%H:%M') }}
+    {% else %}
+      N/A
+    {% endif %}
+

@@ -1,0 +1,25 @@
+# ÖBB Train Checker Template Sensors
+# Include this separately if you want template sensors
+# template: !include oebb-template-sensors.yaml
+
+- sensor:
+    - name: "OEBB Next Train Status"
+      state: >
+        {% set train = state_attr('sensor.oebb_next_train', 'train') %}
+        {% if not train %}
+          No trains available
+        {% elif train.cancelled %}
+          {{ train.line }} - CANCELLED
+        {% elif train.departure.delayMinutes > 0 %}
+          {{ train.line }} - {{ train.departure.delayMinutes }} min delay
+        {% else %}
+          {{ train.line }} - On time
+        {% endif %}
+      attributes:
+        train_line: "{{ state_attr('sensor.oebb_next_train', 'train').line | default('N/A') }}"
+        departure_time: "{{ state_attr('sensor.oebb_next_train', 'train').departure.time | default('N/A') }}"
+        arrival_time: "{{ state_attr('sensor.oebb_next_train', 'train').arrival.time | default('N/A') }}"
+        platform: "{{ state_attr('sensor.oebb_next_train', 'train').departure.platform | default('N/A') }}"
+        delay_minutes: "{{ state_attr('sensor.oebb_next_train', 'train').departure.delayMinutes | default(0) }}"
+        cancelled: "{{ state_attr('sensor.oebb_next_train', 'train').cancelled | default(false) }}"
+
