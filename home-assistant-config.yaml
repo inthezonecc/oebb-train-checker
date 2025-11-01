@@ -1,0 +1,142 @@
+# Home Assistant Configuration for ÖBB Train Checker Add-on
+# Add this to your configuration.yaml file
+#
+# Note: When using as a Home Assistant add-on, use 'http://localhost:3000'
+# or 'http://a0d7b954-oebb-train-checker:3000' (replace with your add-on hostname)
+# The add-on runs on the same network as Home Assistant
+
+# REST Sensor for all trains
+sensor:
+  - platform: rest
+    name: OEBB Trains
+    resource: http://localhost:3000/api/trains
+    scan_interval: 300  # Update every 5 minutes
+    json_attributes:
+      - trains
+      - from
+      - to
+      - count
+      - lastUpdate
+      - status
+    value_template: "{{ value_json.status }}"
+
+  # Sensor for next train only
+  - platform: rest
+    name: OEBB Next Train
+    resource: http://localhost:3000/api/trains/next
+    scan_interval: 300
+    json_attributes:
+      - train
+      - lastUpdate
+      - status
+    value_template: >
+      {% if value_json.train %}
+        {{ value_json.train.line }} at {{ as_timestamp(value_json.train.departure.time) | timestamp_custom('%H:%M') }}
+      {% else %}
+        No trains
+      {% endif %}
+
+  # Individual sensors for next train details
+  - platform: rest
+    name: OEBB Next Train Line
+    resource: http://localhost:3000/api/trains/next
+    scan_interval: 300
+    value_template: "{{ value_json.train.line | default('N/A') }}"
+
+  - platform: rest
+    name: OEBB Next Train Departure
+    resource: http://localhost:3000/api/trains/next
+    scan_interval: 300
+    value_template: >
+      {% if value_json.train and value_json.train.departure.time %}
+        {{ as_timestamp(value_json.train.departure.time) | timestamp_custom('%H:%M') }}
+      {% else %}
+        N/A
+      {% endif %}
+
+  - platform: rest
+    name: OEBB Next Train Delay
+    resource: http://localhost:3000/api/trains/next
+    scan_interval: 300
+    unit_of_measurement: "min"
+    value_template: "{{ value_json.train.departure.delayMinutes | default(0) }}"
+
+  - platform: rest
+    name: OEBB Next Train Cancelled
+    resource: http://localhost:3000/api/trains/next
+    scan_interval: 300
+    value_template: "{{ value_json.train.cancelled | default(false) }}"
+
+  - platform: rest
+    name: OEBB Next Train Platform
+    resource: http://localhost:3000/api/trains/next
+    scan_interval: 300
+    value_template: "{{ value_json.train.departure.platform | default('N/A') }}"
+
+  - platform: rest
+    name: OEBB Next Train Arrival
+    resource: http://localhost:3000/api/trains/next
+    scan_interval: 300
+    value_template: >
+      {% if value_json.train and value_json.train.arrival.time %}
+        {{ as_timestamp(value_json.train.arrival.time) | timestamp_custom('%H:%M') }}
+      {% else %}
+        N/A
+      {% endif %}
+
+# Template sensors for better formatting
+template:
+  - sensor:
+      - name: "OEBB Next Train Status"
+        state: >
+          {% set train = state_attr('sensor.oebb_next_train', 'train') %}
+          {% if not train %}
+            No trains available
+          {% elif train.cancelled %}
+            {{ train.line }} - CANCELLED
+          {% elif train.departure.delayMinutes > 0 %}
+            {{ train.line }} - {{ train.departure.delayMinutes }} min delay
+          {% else %}
+            {{ train.line }} - On time
+          {% endif %}
+        attributes:
+          train_line: "{{ state_attr('sensor.oebb_next_train', 'train').line | default('N/A') }}"
+          departure_time: "{{ state_attr('sensor.oebb_next_train', 'train').departure.time | default('N/A') }}"
+          arrival_time: "{{ state_attr('sensor.oebb_next_train', 'train').arrival.time | default('N/A') }}"
+          platform: "{{ state_attr('sensor.oebb_next_train', 'train').departure.platform | default('N/A') }}"
+          delay_minutes: "{{ state_attr('sensor.oebb_next_train', 'train').departure.delayMinutes | default(0) }}"
+          cancelled: "{{ state_attr('sensor.oebb_next_train', 'train').cancelled | default(false) }}"
+
+# Optional: Automation example to notify about train delays or cancellations
+# automation:
+#   - alias: "OEBB Train Delay Notification"
+#     trigger:
+#       - platform: numeric_state
+#         entity_id: sensor.oebb_next_train_delay
+#         above: 5  # Notify if delay > 5 minutes
+#     condition:
+#       - condition: state
+#         entity_id: sensor.oebb_next_train_cancelled
+#         state: "False"
+#     action:
+#       - service: notify.mobile_app_your_phone
+#         data:
+#           title: "🚆 Train Delay Alert"
+#           message: >
+#             {{ states('sensor.oebb_next_train_line') }} is delayed by 
+#             {{ states('sensor.oebb_next_train_delay') }} minutes.
+#             Departure: {{ states('sensor.oebb_next_train_departure') }}
+#             Platform: {{ states('sensor.oebb_next_train_platform') }}
+
+#   - alias: "OEBB Train Cancelled Notification"
+#     trigger:
+#       - platform: state
+#         entity_id: sensor.oebb_next_train_cancelled
+#         to: "True"
+#     action:
+#       - service: notify.mobile_app_your_phone
+#         data:
+#           title: "❌ Train Cancelled"
+#           message: >
+#             {{ states('sensor.oebb_next_train_line') }} has been cancelled.
+
