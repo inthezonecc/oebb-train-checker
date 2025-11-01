@@ -4,19 +4,24 @@ Instead of adding sensors directly to `configuration.yaml`, you can reference se
 
 ## Method 1: Include in sensor section (Recommended)
 
-**In your `configuration.yaml`, find the `sensor:` section and add:**
+**If you already have a `sensor:` section in your `configuration.yaml`:**
+
+```yaml
+sensor:
+  - platform: ...
+  # your existing sensors
+  
+  # Add OEBB sensors
+  - !include oebb-sensors.yaml
+```
+
+**OR if your sensor section is empty or doesn't exist:**
 
 ```yaml
 sensor: !include oebb-sensors.yaml
 ```
 
-Or if you already have sensors defined:
-```yaml
-sensor:
-  - platform: ...
-  # your existing sensors
-  - !include oebb-sensors.yaml
-```
+**IMPORTANT:** If you have existing sensors, you MUST use `- !include` (with the dash) to append to the list. Do NOT use `sensor: !include` if sensors already exist.
 
 **Then:**
 1. Copy `oebb-sensors.yaml` to your `/config/` directory (same location as `configuration.yaml`)
