@@ -1,0 +1,169 @@
+# Loads default set of integrations. Do not remove.
+default_config:
+
+# Load frontend themes from the themes folder
+frontend:
+  themes: !include_dir_merge_named themes
+
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+mqtt: !include mqtt.yaml
+
+# Add sun
+sun:
+
+# My Home Assistatnt
+my:
+
+# Telegram Bot
+telegram_bot:
+  - platform: polling
+    api_key: "774206512:AAE57bpZWtzi2YbOelJGazX-qc-ZqUE9kyk"
+    allowed_chat_ids:
+      - 531325553
+
+# Notifier
+notify:
+  - platform: telegram
+    name: "hass"
+    chat_id: 531325553
+
+http:
+  ssl_certificate: /ssl/fullchain.pem
+  ssl_key: /ssl/privkey.pem
+  use_x_forwarded_for: true
+  trusted_proxies:
+    - 172.30.33.0/24
+
+# Example configuration.yaml entry
+api:
+
+# Cameras
+camera:
+  - platform: ffmpeg
+    name: "In front of TV"
+    input: -f rtsp -rtsp_transport tcp -i rtsp://Sv6YAnwM3uHy:Pd0uaXyvN7vj@192.168.11.204/live0
+
+# Euro pricing and ÖBB Train Checker Sensors
+sensor:
+  - platform: template
+    sensors:
+      solar_saving_total_old_price:
+        friendly_name: "Euros saved using Solar total old price"
+        unique_id: euros_saved_using_solar_total_old_price
+        unit_of_measurement: '€'
+        icon_template: mdi:currency-eur
+        value_template: >-
+          {{ ((states('sensor.hoymiles_1600_yieldtotal') | float * 0.40) )| round(2)  }}
+
+  - platform: template
+    sensors:
+      solar_saving_total_new_price:
+        friendly_name: "Euros saved using Solar total new price"
+        unique_id: euros_saved_using_solar_total_new_price
+        unit_of_measurement: '€'
+        icon_template: mdi:currency-eur
+        value_template: >-
+          {{ ((states('sensor.hoymiles_1600_yieldtotal') | float * 0.13) )| round(2)  }}
+
+  - platform: template
+    sensors:
+      solar_saving_daily_old_price:
+        friendly_name: "Euros saved using Solar day old price"
+        unique_id: euros_saved_using_solar_day_old_price
+        unit_of_measurement: '€'
+        icon_template: mdi:currency-eur
+        value_template: >-
+          {{ ((states('sensor.hoymiles_1600_yieldday') | float * 0.40) )| round(2)  }}
+
+  - platform: template
+    sensors:
+      solar_saving_daily_new_price:
+        friendly_name: "Euros saved using Solar day new price"
+        unique_id: euros_saved_using_solar_day_new_price
+        unit_of_measurement: '€'
+        icon_template: mdi:currency-eur
+        value_template: >-
+          {{ ((states('sensor.hoymiles_1600_yieldday') | float * 0.13) )| round(2)  }}
+
+  # ÖBB Train Checker Sensors
+  - platform: rest
+    name: OEBB Trains
+    resource: http://localhost:3000/api/trains
+    scan_interval: 300
+    json_attributes:
+      - trains
+      - from
+      - to
+      - count
+      - lastUpdate
+      - status
+    value_template: "{{ value_json.status }}"
+
+  - platform: rest
+    name: OEBB Next Train
+    resource: http://localhost:3000/api/trains/next
+    scan_interval: 300
+    json_attributes:
+      - train
+      - lastUpdate
+      - status
+    value_template: >
+      {% if value_json.train %}
+        {{ value_json.train.line }} at {{ as_timestamp(value_json.train.departure.time) | timestamp_custom('%H:%M') }}
+      {% else %}
+        No trains
+      {% endif %}
+
+  - platform: rest
+    name: OEBB Next Train Line
+    resource: http://localhost:3000/api/trains/next
+    scan_interval: 300
+    value_template: "{{ value_json.train.line | default('N/A') }}"
+
+  - platform: rest
+    name: OEBB Next Train Departure
+    resource: http://localhost:3000/api/trains/next
+    scan_interval: 300
+    value_template: >
+      {% if value_json.train and value_json.train.departure.time %}
+        {{ as_timestamp(value_json.train.departure.time) | timestamp_custom('%H:%M') }}
+      {% else %}
+        N/A
+      {% endif %}
+
+  - platform: rest
+    name: OEBB Next Train Delay
+    resource: http://localhost:3000/api/trains/next
+    scan_interval: 300
+    unit_of_measurement: "min"
+    value_template: "{{ value_json.train.departure.delayMinutes | default(0) }}"
+
+  - platform: rest
+    name: OEBB Next Train Cancelled
+    resource: http://localhost:3000/api/trains/next
+    scan_interval: 300
+    value_template: "{{ value_json.train.cancelled | default(false) }}"
+
+  - platform: rest
+    name: OEBB Next Train Platform
+    resource: http://localhost:3000/api/trains/next
+    scan_interval: 300
+    value_template: "{{ value_json.train.departure.platform | default('N/A') }}"
+
+  - platform: rest
+    name: OEBB Next Train Arrival
+    resource: http://localhost:3000/api/trains/next
+    scan_interval: 300
+    value_template: >
+      {% if value_json.train and value_json.train.arrival.time %}
+        {{ as_timestamp(value_json.train.arrival.time) | timestamp_custom('%H:%M') }}
+      {% else %}
+        N/A
+      {% endif %}
+
+# Example configuration.yaml entry
+binary_sensor:
+  - platform: flic
+
