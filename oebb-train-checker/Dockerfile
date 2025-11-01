@@ -14,14 +14,20 @@ RUN npm ci --only=production
 
 # Copy application files
 COPY oebb.js ./
-COPY run.sh ./
 
-# Make run script executable
-RUN chmod a+x /app/run.sh
+# Copy run script to s6 service directory
+RUN mkdir -p /etc/s6-overlay/s6-rc.d/svc/run
+COPY run.sh /etc/cont-init.d/99-run.sh
+RUN chmod +x /etc/cont-init.d/99-run.sh
 
 # Expose port
 EXPOSE 3000
 
-# Use run.sh as entrypoint (Home Assistant add-on standard)
-ENTRYPOINT ["/app/run.sh"]
+# Create s6 service
+RUN \
+    printf '#!/command/with-contenv /bin/bashio\n' \
+    'cd /app\n' \
+    'exec node oebb.js\n' \
+    > /etc/s6-overlay/s6-rc.d/svc/run \
+    && chmod +x /etc/s6-overlay/s6-rc.d/svc/run
 

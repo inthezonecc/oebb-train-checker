@@ -21,9 +21,3 @@ bashio::log.info "To: ${TO_STATION}"
 bashio::log.info "Departure time: ${DEPARTURE_HOUR}:${DEPARTURE_MINUTE}"
 bashio::log.info "Port: ${PORT}"
 
-# Change to app directory
-cd /app
-
-# Start the application
-exec node oebb.js
-
