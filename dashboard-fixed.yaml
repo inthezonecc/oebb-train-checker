@@ -1,0 +1,111 @@
+# Home Assistant Dashboard Configuration for ÖBB Train Checker - FIXED VERSION
+# This version handles missing entities and None values properly
+# Copy this into your Home Assistant Dashboard → Add Card → Manual
+
+type: vertical-stack
+title: 🚂 ÖBB Train Schedule
+cards:
+  # Header Card
+  - type: markdown
+    content: |
+      ## 🚂 ÖBB Train Schedule
+      **Route:** {{ states('sensor.oebb_trains') | default('Loading...', true) }}
+      **Last Update:** {% set last_update = state_attr('sensor.oebb_trains', 'lastUpdate') %}{% if last_update and last_update != 'unknown' and last_update != 'unavailable' and last_update %}{{ last_update | as_datetime | as_local }}{% else %}N/A{% endif %}
+    card_mod:
+      style: |
+        ha-card {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+        }
+        ha-card h1, ha-card h2 {
+          color: white;
+        }
+
+  # Next Train Card
+  - type: custom:card-mod
+    card:
+      type: entities
+      title: Next Train
+      entities:
+        - entity: sensor.oebb_next_train
+          name: Train
+        - entity: sensor.oebb_next_train_departure
+          name: Departure
+          icon: mdi:train
+        - entity: sensor.oebb_next_train_arrival
+          name: Arrival
+          icon: mdi:train
+        - entity: sensor.oebb_next_train_delay
+          name: Delay
+          unit_of_measurement: min
+          icon: mdi:clock-alert
+          state_color: |
+            [[[
+              const delay = parseInt(states['sensor.oebb_next_train_delay'].state);
+              if (isNaN(delay)) return 'red';
+              if (delay > 5) return 'red';
+              if (delay > 0) return 'orange';
+              return 'green';
+            ]]]
+        - entity: sensor.oebb_next_train_platform
+          name: Platform
+          icon: mdi:train-car
+        - entity: sensor.oebb_next_train_cancelled
+          name: Status
+          icon: mdi:alert-circle
+          state_color: |
+            [[[
+              if (states['sensor.oebb_next_train_cancelled'].state === 'True') return 'red';
+              return 'green';
+            ]]]
+
+  # Train Details Card
+  - type: custom:card-mod
+    card:
+      type: markdown
+      title: Train Details
+      content: |
+        {% set train = state_attr('sensor.oebb_next_train', 'train') %}
+        {% if train and train is mapping %}
+        **Line:** {{ train.line | default('N/A') }}  
+        **From:** {{ train.origin.name | default('Tullnerfeld') if train.origin else 'Tullnerfeld' }}  
+        **To:** {{ train.destination.name | default('Wien Hbf') if train.destination else 'Wien Hbf' }}  
+        **Departure:** {% if train.departure and train.departure.time %}{{ train.departure.time | as_datetime | as_local | strftime('%H:%M') }}{% else %}N/A{% endif %}  
+        {% if train.departure and train.departure.delayMinutes > 0 %}
+        **Delay:** +{{ train.departure.delayMinutes }} min  
+        {% endif %}
+        **Platform:** {{ train.departure.platform | default('TBA') if train.departure else 'TBA' }}  
+        {% if train.cancelled %}
+        ## ❌ **CANCELLED**
+        {% endif %}
+        {% else %}
+        **No train data available**
+        
+        Please check:
+        1. Add-on is running (Settings → Add-ons → ÖBB Train Checker)
+        2. Sensors are configured correctly in configuration.yaml
+        3. API is accessible at http://localhost:3000
+        4. Home Assistant was restarted after adding sensors
+        {% endif %}
+    card_mod:
+      style: |
+        ha-card {
+          background: var(--card-background-color);
+        }
+
+  # All Trains Card (showing next 3)
+  - type: entities
+    title: Upcoming Trains
+    entities:
+      - type: custom:template-entity-row
+        entity: sensor.oebb_trains
+        name: "{{ states('sensor.oebb_trains') }}"
+        secondary: "{{ state_attr('sensor.oebb_trains', 'count') | default(0) }} trains available"
+        icon: mdi:train
+    card_mod:
+      style: |
+        ha-card .entities {
+          display: flex;
+          flex-direction: column;
+        }
+
