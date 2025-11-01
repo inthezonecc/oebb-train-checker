@@ -19,9 +19,9 @@ COPY oebb.js ./
 COPY run.sh /etc/cont-init.d/99-run.sh
 RUN chmod +x /etc/cont-init.d/99-run.sh
 
-# Create service run script (runs continuously - no bashio here)
+# Create service run script (runs continuously - env vars already set by cont-init.d)
 RUN mkdir -p /etc/services.d/app && \
-    printf '#!/command/with-contenv sh\n' \
+    printf '#!/bin/sh\n' \
            'cd /app\n' \
            'exec node oebb.js\n' \
     > /etc/services.d/app/run && \
