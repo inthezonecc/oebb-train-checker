@@ -15,13 +15,13 @@ RUN npm ci --only=production
 # Copy application files
 COPY oebb.js ./
 
-# Copy run script to cont-init.d (runs once at startup)
+# Copy run script to cont-init.d (runs once at startup to set env vars)
 COPY run.sh /etc/cont-init.d/99-run.sh
 RUN chmod +x /etc/cont-init.d/99-run.sh
 
-# Create service run script (runs continuously)
+# Create service run script (runs continuously - no bashio here)
 RUN mkdir -p /etc/services.d/app && \
-    printf '#!/command/with-contenv /bin/bashio\n' \
+    printf '#!/command/with-contenv sh\n' \
            'cd /app\n' \
            'exec node oebb.js\n' \
     > /etc/services.d/app/run && \
