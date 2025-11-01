@@ -6,11 +6,11 @@ on:
       - main
       - master
     paths:
-      - 'addon/**'
+      - 'oebb-train-checker/**'
       - '.github/workflows/build.yml'
   pull_request:
     paths:
-      - 'addon/**'
+      - 'oebb-train-checker/**'
   release:
     types: [published]
   workflow_dispatch:
@@ -61,7 +61,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: ./addon
+          context: ./oebb-train-checker
           platforms: linux/${{ matrix.arch }}
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}

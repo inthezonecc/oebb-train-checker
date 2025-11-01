@@ -27,7 +27,7 @@
     "departure_minute": "int(0,59)",
     "port": "int"
   },
-  "image": "ghcr.io/inthezonecc/oebb-train-checker",
+  "image": "ghcr.io/inthezonecc/oebb-train-checker:latest",
   "ingress": false,
   "map": ["config:rw"],
   "environment": {
