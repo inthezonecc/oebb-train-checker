@@ -15,10 +15,12 @@ cards:
       **Status:** 
       {% if states('sensor.oebb_next_train_cancelled') == 'True' %}
       ❌ **CANCELLED**
-      {% elif states('sensor.oebb_next_train_delay') | int > 5 %}
+      {% elif states('sensor.oebb_next_train_delay') not in ['unknown', 'unavailable', None] and (states('sensor.oebb_next_train_delay') | int) > 5 %}
       ⚠️ **DELAYED** (+{{ states('sensor.oebb_next_train_delay') }} min)
-      {% elif states('sensor.oebb_next_train_delay') | int > 0 %}
+      {% elif states('sensor.oebb_next_train_delay') not in ['unknown', 'unavailable', None] and (states('sensor.oebb_next_train_delay') | int) > 0 %}
       🟡 Minor delay (+{{ states('sensor.oebb_next_train_delay') }} min)
+      {% elif states('sensor.oebb_next_train_delay') in ['unknown', 'unavailable', None] %}
+      ⏳ Loading...
       {% else %}
       ✅ **On Time**
       {% endif %}
