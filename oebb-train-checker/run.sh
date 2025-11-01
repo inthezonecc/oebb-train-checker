@@ -15,10 +15,13 @@ export DEPARTURE_HOUR
 export DEPARTURE_MINUTE
 export PORT
 
-# Log configuration using echo (bashio logging seems to have issues)
+# Log configuration - write directly to stderr so it appears in logs
+exec >&2
+echo "========================================"
 echo "Starting ÖBB Train Checker..."
 echo "From: ${FROM_STATION}"
 echo "To: ${TO_STATION}"
 echo "Departure time: ${DEPARTURE_HOUR}:${DEPARTURE_MINUTE}"
 echo "Port: ${PORT}"
+echo "========================================"
 
