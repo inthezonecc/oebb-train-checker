@@ -1,0 +1,84 @@
+# Quick Dashboard for ÖBB Train Checker
+# Copy this into Home Assistant Dashboard → Add Card → Manual
+# This is a simple, clean dashboard to view train schedules
+
+type: vertical-stack
+cards:
+  # Header Card with Status
+  - type: markdown
+    title: 🚂 ÖBB Train Schedule
+    content: |
+      ## Next Train: {{ states('sensor.oebb_next_train') | default('Loading...', true) }}
+      
+      **Route:** Tullnerfeld → Wien Hbf
+      
+      **Status:** 
+      {% if states('sensor.oebb_next_train_cancelled') == 'True' %}
+      ❌ **CANCELLED**
+      {% elif states('sensor.oebb_next_train_delay') | int > 5 %}
+      ⚠️ **DELAYED** (+{{ states('sensor.oebb_next_train_delay') }} min)
+      {% elif states('sensor.oebb_next_train_delay') | int > 0 %}
+      🟡 Minor delay (+{{ states('sensor.oebb_next_train_delay') }} min)
+      {% else %}
+      ✅ **On Time**
+      {% endif %}
+
+  # Train Details Card
+  - type: entities
+    title: Train Details
+    show_header_toggle: false
+    entities:
+      - entity: sensor.oebb_next_train_line
+        name: Train Line
+        icon: mdi:train
+      - entity: sensor.oebb_next_train_departure
+        name: Departure Time
+        icon: mdi:clock-outline
+      - entity: sensor.oebb_next_train_arrival
+        name: Arrival Time
+        icon: mdi:clock
+      - entity: sensor.oebb_next_train_delay
+        name: Delay
+        icon: mdi:clock-alert
+        unit_of_measurement: "min"
+      - entity: sensor.oebb_next_train_platform
+        name: Platform
+        icon: mdi:train-car
+      - type: attribute
+        entity: sensor.oebb_trains
+        attribute: lastUpdate
+        name: Last Updated
+        icon: mdi:clock-check
+
+  # Status Card
+  - type: markdown
+    title: Train Status
+    content: |
+      {% set train = state_attr('sensor.oebb_next_train', 'train') %}
+      {% if train %}
+      **Line:** {{ train.line }}  
+      **From:** {{ train.origin.name | default('Tullnerfeld') }}  
+      **To:** {{ train.destination.name | default('Wien Hbf') }}  
+      **Departure:** {{ train.departure.time | as_datetime | as_local | strftime('%H:%M') }}  
+      {% if train.departure.delayMinutes > 0 %}
+      **Delay:** +{{ train.departure.delayMinutes }} min  
+      {% endif %}
+      **Platform:** {{ train.departure.platform | default('TBA') }}  
+      **Arrival:** {{ train.arrival.time | as_datetime | as_local | strftime('%H:%M') }}
+      
+      {% if train.cancelled %}
+      ## ❌ **TRAIN CANCELLED**
+      {% endif %}
+      
+      {% if train.departure.remarks %}
+      **Remarks:** {{ train.departure.remarks | join(', ') }}
+      {% endif %}
+      {% else %}
+      **No train data available**
+      
+      Please check:
+      1. Add-on is running (Settings → Add-ons → ÖBB Train Checker)
+      2. Sensors are configured correctly
+      3. API is accessible at http://localhost:3000
+      {% endif %}
+
