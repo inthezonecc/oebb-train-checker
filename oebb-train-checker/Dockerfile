@@ -23,10 +23,12 @@ RUN chmod +x /etc/cont-init.d/99-run.sh
 RUN mkdir -p /etc/services.d/app && \
     printf '#!/bin/sh\n' \
            'set -e\n' \
-           'echo "Starting ÖBB Train Checker service..."\n' \
-           'cd /app\n' \
-           'echo "Working directory: $(pwd)"\n' \
-           'echo "Environment: FROM_STATION=${FROM_STATION}, TO_STATION=${TO_STATION}"\n' \
+           'echo "[SERVICE] Starting ÖBB Train Checker service..."\n' \
+           'cd /app || exit 1\n' \
+           'echo "[SERVICE] Working directory: $(pwd)"\n' \
+           'echo "[SERVICE] Node version: $(node --version)"\n' \
+           'echo "[SERVICE] Environment: FROM_STATION=${FROM_STATION}, TO_STATION=${TO_STATION}, PORT=${PORT}"\n' \
+           'echo "[SERVICE] Starting Node.js application..."\n' \
            'exec node oebb.js\n' \
     > /etc/services.d/app/run && \
     chmod +x /etc/services.d/app/run

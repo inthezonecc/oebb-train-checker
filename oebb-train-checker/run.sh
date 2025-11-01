@@ -15,9 +15,10 @@ export DEPARTURE_HOUR
 export DEPARTURE_MINUTE
 export PORT
 
-bashio::log.info "Starting ÖBB Train Checker..."
-bashio::log.info "From: ${FROM_STATION}"
-bashio::log.info "To: ${TO_STATION}"
-bashio::log.info "Departure time: ${DEPARTURE_HOUR}:${DEPARTURE_MINUTE}"
-bashio::log.info "Port: ${PORT}"
+# Log configuration using echo (bashio logging seems to have issues)
+echo "Starting ÖBB Train Checker..."
+echo "From: ${FROM_STATION}"
+echo "To: ${TO_STATION}"
+echo "Departure time: ${DEPARTURE_HOUR}:${DEPARTURE_MINUTE}"
+echo "Port: ${PORT}"
 
