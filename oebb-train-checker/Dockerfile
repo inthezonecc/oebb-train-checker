@@ -22,7 +22,11 @@ RUN chmod +x /etc/cont-init.d/99-run.sh
 # Create service run script (runs continuously - env vars already set by cont-init.d)
 RUN mkdir -p /etc/services.d/app && \
     printf '#!/bin/sh\n' \
+           'set -e\n' \
+           'echo "Starting ÖBB Train Checker service..."\n' \
            'cd /app\n' \
+           'echo "Working directory: $(pwd)"\n' \
+           'echo "Environment: FROM_STATION=${FROM_STATION}, TO_STATION=${TO_STATION}"\n' \
            'exec node oebb.js\n' \
     > /etc/services.d/app/run && \
     chmod +x /etc/services.d/app/run
