@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "slug": "oebb-train-checker",
   "description": "Monitor ÖBB train schedules from Tullnerfeld Bahnhof to Wien Hbf with delays, cancellations, and platform information",
-  "url": "https://github.com/yourusername/oebb-train-checker",
+  "url": "https://github.com/inthezonecc/oebb-train-checker",
   "arch": ["aarch64", "amd64", "armhf", "armv7", "i386"],
   "startup": "application",
   "boot": "auto",
@@ -27,7 +27,7 @@
     "departure_minute": "int(0,59)",
     "port": "int"
   },
-  "image": "ghcr.io/yourusername/oebb-train-checker",
+  "image": "ghcr.io/inthezonecc/oebb-train-checker",
   "ingress": false,
   "map": ["config:rw"],
   "environment": {
