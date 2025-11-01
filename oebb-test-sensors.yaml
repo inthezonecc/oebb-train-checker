@@ -1,0 +1,46 @@
+# Test Sensors for ÖBB Train Checker Add-on
+# Add these to your configuration.yaml to test if the add-on API is working
+
+# REST Command to test health endpoint
+rest_command:
+  test_oebb_health:
+    url: http://localhost:3000/health
+    method: GET
+    timeout: 5
+
+# Health Check Sensor
+sensor:
+  # Health Check Sensor
+  - platform: rest
+    name: OEBB Health Check
+    resource: http://localhost:3000/health
+    scan_interval: 30
+    value_template: >
+      {% if value_json %}
+        {{ value_json.status | default('OK') }}
+      {% elif value == 'ok' %}
+        OK
+      {% else %}
+        {{ value | default('unavailable') }}
+      {% endif %}
+
+  # Add-on Status Sensor (tests if API is responding)
+  - platform: template
+    sensors:
+      oebb_addon_status:
+        friendly_name: ÖBB Add-on Status
+        value_template: >
+          {% if states('sensor.oebb_health_check') == 'unavailable' or
+                states('sensor.oebb_health_check') == 'unknown' %}
+            Offline
+          {% else %}
+            Online
+          {% endif %}
+        icon_template: >
+          {% if states('sensor.oebb_health_check') == 'unavailable' or
+                states('sensor.oebb_health_check') == 'unknown' %}
+            mdi:server-off
+          {% else %}
+            mdi:server-network
+          {% endif %}
+

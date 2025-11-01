@@ -1,0 +1,83 @@
+# Test Dashboard for ÖBB Train Checker Add-on
+# This dashboard helps verify if the add-on API is working
+# Even if logs aren't showing, this will tell us if the API is responding
+
+type: vertical-stack
+title: 🧪 ÖBB Add-on Test Dashboard
+cards:
+  # Health Check Card
+  - type: markdown
+    title: Add-on Health Check
+    content: |
+      ## API Status Check
+      
+      **Health Endpoint:** `http://localhost:3000/health`
+      
+      Use the button below to test if the add-on API is responding.
+      
+      **Add-on Status:** Check the add-on status in Settings → Add-ons → ÖBB Train Checker
+      
+      **If API is working:** You should see "OK" or JSON response
+      
+      **If API is NOT working:** You'll see "unavailable" or connection errors
+
+  # Health Check Button
+  - type: button
+    name: Test Health Endpoint
+    tap_action:
+      action: call-service
+      service: rest_command.test_oebb_health
+    icon: mdi:heart-pulse
+
+  # Health Check Result
+  - type: entity
+    entity: sensor.oebb_health_check
+    name: Health Check Result
+    icon: mdi:check-circle
+
+  # Manual API Test Card
+  - type: markdown
+    title: Manual Test Instructions
+    content: |
+      ## Test via Developer Tools
+      
+      1. Go to **Developer Tools** → **YAML**
+      2. Run this service:
+      
+      ```yaml
+      service: rest_command.test_oebb_health
+      ```
+      
+      Or test the endpoint directly:
+      
+      **Test Health:**
+      ```
+      http://localhost:3000/health
+      ```
+      
+      **Test Trains Endpoint:**
+      ```
+      http://localhost:3000/api/trains
+      ```
+      
+      **Test Next Train:**
+      ```
+      http://localhost:3000/api/trains/next
+      ```
+
+  # Status Card
+  - type: entities
+    title: Add-on Status
+    entities:
+      - entity: sensor.oebb_trains
+        name: Trains Status
+        icon: mdi:train
+      - entity: sensor.oebb_next_train
+        name: Next Train
+        icon: mdi:clock-outline
+      - type: attribute
+        entity: sensor.oebb_trains
+        attribute: lastUpdate
+        name: Last Update
+        icon: mdi:clock-check
+
