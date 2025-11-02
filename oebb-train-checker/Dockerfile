@@ -49,5 +49,5 @@ RUN mkdir -p /etc/services.d/app && \
     chmod +x /etc/services.d/app/finish
 
 # Expose port
-EXPOSE 3000
+EXPOSE 3535
 
