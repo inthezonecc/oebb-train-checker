@@ -20,37 +20,40 @@ COPY run.sh /etc/cont-init.d/99-run.sh
 RUN chmod +x /etc/cont-init.d/99-run.sh
 
 # Create service run script (runs continuously - env vars already set by cont-init.d)
+# For s6-overlay, use a simple service structure that outputs to stdout
 RUN mkdir -p /etc/services.d/app && \
-    printf '#!/bin/sh\n' \
-           'exec 2>&1\n' \
-           'echo "[SERVICE] ========================================"\n' \
-           'echo "[SERVICE] Starting ÖBB Train Checker service..."\n' \
-           'echo "[SERVICE] ========================================"\n' \
-           'cd /app || exit 1\n' \
-           'echo "[SERVICE] Working directory: $(pwd)"\n' \
-           'echo "[SERVICE] Node version: $(node --version 2>&1 || echo "ERROR: node not found")"\n' \
-           'echo "[SERVICE] Environment variables:"\n' \
-           'echo "[SERVICE]   FROM_STATION=${FROM_STATION:-not set}"\n' \
-           'echo "[SERVICE]   TO_STATION=${TO_STATION:-not set}"\n' \
-           'echo "[SERVICE]   PORT=${PORT:-not set}"\n' \
-           'echo "[SERVICE]   DEPARTURE_HOUR=${DEPARTURE_HOUR:-not set}"\n' \
-           'echo "[SERVICE]   DEPARTURE_MINUTE=${DEPARTURE_MINUTE:-not set}"\n' \
-           'echo "[SERVICE] Checking if oebb.js exists..."\n' \
-           'if [ ! -f /app/oebb.js ]; then\n' \
-           '  echo "[SERVICE] ERROR: oebb.js not found!"\n' \
-           '  exit 1\n' \
-           'fi\n' \
-           'echo "[SERVICE] File exists: $(ls -la /app/oebb.js)"\n' \
-           'echo "[SERVICE] Starting Node.js application..."\n' \
-           'echo "[SERVICE] Node.js command: node /app/oebb.js"\n' \
-           'exec node /app/oebb.js 2>&1\n' \
-    > /etc/services.d/app/run && \
+    cat > /etc/services.d/app/run << 'EOF'
+#!/usr/bin/with-contenv sh
+set -e
+echo "[SERVICE] ========================================"
+echo "[SERVICE] Starting ÖBB Train Checker service..."
+echo "[SERVICE] ========================================"
+cd /app || exit 1
+echo "[SERVICE] Working directory: $(pwd)"
+echo "[SERVICE] Node version: $(node --version 2>&1 || echo "ERROR: node not found")"
+echo "[SERVICE] Environment variables:"
+echo "[SERVICE]   FROM_STATION=${FROM_STATION:-not set}"
+echo "[SERVICE]   TO_STATION=${TO_STATION:-not set}"
+echo "[SERVICE]   PORT=${PORT:-not set}"
+echo "[SERVICE]   DEPARTURE_HOUR=${DEPARTURE_HOUR:-not set}"
+echo "[SERVICE]   DEPARTURE_MINUTE=${DEPARTURE_MINUTE:-not set}"
+echo "[SERVICE] Checking if oebb.js exists..."
+if [ ! -f /app/oebb.js ]; then
+  echo "[SERVICE] ERROR: oebb.js not found!"
+  exit 1
+fi
+echo "[SERVICE] File exists: $(ls -la /app/oebb.js)"
+echo "[SERVICE] Starting Node.js application..."
+echo "[SERVICE] Node.js command: node /app/oebb.js"
+exec node /app/oebb.js
+EOF
     chmod +x /etc/services.d/app/run && \
     # Create finish script for proper service management
-    printf '#!/bin/sh\n' \
-           'echo "[SERVICE] ÖBB Train Checker service stopped"\n' \
-           'exit 0\n' \
-    > /etc/services.d/app/finish && \
+    cat > /etc/services.d/app/finish << 'EOF'
+#!/bin/sh
+echo "[SERVICE] ÖBB Train Checker service stopped"
+exit 0
+EOF
     chmod +x /etc/services.d/app/finish
 
 # Expose port
