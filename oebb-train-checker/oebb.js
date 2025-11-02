@@ -306,7 +306,13 @@ cron.schedule(`${DEPARTURE_MINUTE} ${DEPARTURE_HOUR} * * 1-5`, async () => {
 
 // Run once immediately if it's a weekday
 if (isWeekday()) {
-  checkTrains().catch((error) => {
+  console.log('Today is a weekday, running initial check...')
+  checkTrains().then(() => {
+    console.log('Initial check completed successfully')
+  }).catch((error) => {
     console.error('ERROR in initial train check:', error)
+    console.error('Stack:', error.stack)
   })
+} else {
+  console.log('Today is not a weekday, skipping initial check')
 }
