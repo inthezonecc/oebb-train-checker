@@ -87,6 +87,13 @@ sensor:
         value_template: >-
           {{ ((states('sensor.hoymiles_1600_yieldday') | float * 0.13) )| round(2)  }}
 
+  # TEST SENSOR - Remove after testing
+  - platform: rest
+    name: Test REST Sensor
+    resource: http://httpbin.org/json
+    scan_interval: 60
+    value_template: "{{ value_json.slideshow.title | default('Test Working') }}"
+
   # ÖBB Train Checker Sensors
   - platform: rest
     name: OEBB Trains
