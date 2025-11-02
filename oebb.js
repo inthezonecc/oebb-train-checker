@@ -8,7 +8,7 @@ const hafas = createClient(oebb, 'homeassistant')
 
 // HTTP server for Home Assistant integration
 const app = express()
-const PORT = process.env.PORT || 3000
+const PORT = process.env.PORT || 3535
 
 // Configuration from environment variables (for Home Assistant add-on)
 const FROM_STATION = process.env.FROM_STATION || 'Tullnerfeld Bahnhof'
