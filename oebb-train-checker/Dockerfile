@@ -20,41 +20,29 @@ COPY run.sh /etc/cont-init.d/99-run.sh
 RUN chmod +x /etc/cont-init.d/99-run.sh
 
 # Create service run script (runs continuously - env vars already set by cont-init.d)
-# For s6-overlay v3, use services.d with proper structure
-RUN mkdir -p /etc/services.d/app && \
-    printf '%s\n' \
-           '#!/command/with-contenv sh' \
-           'set -e' \
-           'exec 2>&1' \
-           'echo "[SERVICE] ========================================"' \
-           'echo "[SERVICE] Starting ÖBB Train Checker service..."' \
-           'echo "[SERVICE] ========================================"' \
-           'cd /app || exit 1' \
-           'echo "[SERVICE] Working directory: $(pwd)"' \
-           'echo "[SERVICE] Node version: $(node --version 2>&1 || echo "ERROR: node not found")"' \
-           'echo "[SERVICE] Environment variables:"' \
-           'echo "[SERVICE]   FROM_STATION=${FROM_STATION:-not set}"' \
-           'echo "[SERVICE]   TO_STATION=${TO_STATION:-not set}"' \
-           'echo "[SERVICE]   PORT=${PORT:-not set}"' \
-           'echo "[SERVICE]   DEPARTURE_HOUR=${DEPARTURE_HOUR:-not set}"' \
-           'echo "[SERVICE]   DEPARTURE_MINUTE=${DEPARTURE_MINUTE:-not set}"' \
-           'echo "[SERVICE] Checking if oebb.js exists..."' \
-           'if [ ! -f /app/oebb.js ]; then' \
-           '  echo "[SERVICE] ERROR: oebb.js not found!"' \
-           '  exit 1' \
-           'fi' \
-           'echo "[SERVICE] File exists: $(ls -la /app/oebb.js)"' \
-           'echo "[SERVICE] Starting Node.js application..."' \
-           'echo "[SERVICE] Node.js command: node /app/oebb.js"' \
-           'exec node /app/oebb.js' \
-    > /etc/services.d/app/run && \
-    chmod +x /etc/services.d/app/run && \
-    # Create finish script for proper service management
-    printf '%s\n' \
-           '#!/bin/sh' \
-           'echo "[SERVICE] ÖBB Train Checker service stopped"' \
-           'exit 0' \
-    > /etc/services.d/app/finish && \
+# Using RUN to create service script directly with proper structure
+RUN mkdir -p /etc/services.d/app
+
+# Copy service run script - created as separate step for better visibility
+RUN echo '#!/command/with-contenv sh' > /etc/services.d/app/run && \
+    echo 'exec 2>&1' >> /etc/services.d/app/run && \
+    echo 'echo "[SERVICE] ========================================"' >> /etc/services.d/app/run && \
+    echo 'echo "[SERVICE] Starting ÖBB Train Checker service..."' >> /etc/services.d/app/run && \
+    echo 'echo "[SERVICE] ========================================"' >> /etc/services.d/app/run && \
+    echo 'cd /app || exit 1' >> /etc/services.d/app/run && \
+    echo 'echo "[SERVICE] Working directory: $(pwd)"' >> /etc/services.d/app/run && \
+    echo 'echo "[SERVICE] Node version: $(node --version 2>&1 || echo "ERROR")"' >> /etc/services.d/app/run && \
+    echo 'echo "[SERVICE] PORT=${PORT}"' >> /etc/services.d/app/run && \
+    echo 'echo "[SERVICE] Checking oebb.js..."' >> /etc/services.d/app/run && \
+    echo 'ls -la /app/oebb.js || exit 1' >> /etc/services.d/app/run && \
+    echo 'echo "[SERVICE] Starting Node.js..."' >> /etc/services.d/app/run && \
+    echo 'exec node /app/oebb.js' >> /etc/services.d/app/run && \
+    chmod +x /etc/services.d/app/run
+
+# Create finish script
+RUN echo '#!/bin/sh' > /etc/services.d/app/finish && \
+    echo 'echo "[SERVICE] Stopped"' >> /etc/services.d/app/finish && \
+    echo 'exit 0' >> /etc/services.d/app/finish && \
     chmod +x /etc/services.d/app/finish
 
 # Expose port
