@@ -106,7 +106,12 @@ sensor:
       - count
       - lastUpdate
       - status
-    value_template: "{{ value_json.status }}"
+    value_template: >
+      {% if value_json and value_json.status %}
+        {{ value_json.status }}
+      {% else %}
+        unavailable
+      {% endif %}
 
   - platform: rest
     name: OEBB Next Train
