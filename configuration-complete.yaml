@@ -117,7 +117,7 @@ sensor:
       - lastUpdate
       - status
     value_template: >
-      {% if value_json.train %}
+      {% if value_json and value_json.train and value_json.train.line and value_json.train.departure and value_json.train.departure.time %}
         {{ value_json.train.line }} at {{ as_timestamp(value_json.train.departure.time) | timestamp_custom('%H:%M') }}
       {% else %}
         No trains
@@ -127,7 +127,12 @@ sensor:
     name: OEBB Next Train Line
     resource: http://localhost:3000/api/trains/next
     scan_interval: 300
-    value_template: "{{ value_json.train.line | default('N/A') }}"
+    value_template: >
+      {% if value_json and value_json.train and value_json.train.line %}
+        {{ value_json.train.line }}
+      {% else %}
+        N/A
+      {% endif %}
 
   - platform: rest
     name: OEBB Next Train Departure
@@ -145,19 +150,34 @@ sensor:
     resource: http://localhost:3000/api/trains/next
     scan_interval: 300
     unit_of_measurement: "min"
-    value_template: "{{ value_json.train.departure.delayMinutes | default(0) }}"
+    value_template: >
+      {% if value_json and value_json.train and value_json.train.departure and value_json.train.departure.delayMinutes %}
+        {{ value_json.train.departure.delayMinutes }}
+      {% else %}
+        0
+      {% endif %}
 
   - platform: rest
     name: OEBB Next Train Cancelled
     resource: http://localhost:3000/api/trains/next
     scan_interval: 300
-    value_template: "{{ value_json.train.cancelled | default(false) }}"
+    value_template: >
+      {% if value_json and value_json.train and value_json.train.cancelled %}
+        {{ value_json.train.cancelled }}
+      {% else %}
+        false
+      {% endif %}
 
   - platform: rest
     name: OEBB Next Train Platform
     resource: http://localhost:3000/api/trains/next
     scan_interval: 300
-    value_template: "{{ value_json.train.departure.platform | default('N/A') }}"
+    value_template: >
+      {% if value_json and value_json.train and value_json.train.departure and value_json.train.departure.platform %}
+        {{ value_json.train.departure.platform }}
+      {% else %}
+        N/A
+      {% endif %}
 
   - platform: rest
     name: OEBB Next Train Arrival
