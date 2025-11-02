@@ -240,9 +240,18 @@ app.get('/api/trains/next', (req, res) => {
 
 // Trigger manual check
 app.post('/api/trains/check', async (req, res) => {
-  console.log('Manual train check triggered via API')
-  const result = await checkTrains()
-  res.json(result)
+  try {
+    console.log('Manual train check triggered via API')
+    const result = await checkTrains()
+    res.json(result)
+  } catch (error) {
+    console.error('Error in manual train check:', error)
+    res.status(500).json({
+      status: 'error',
+      error: error.message,
+      stack: error.stack
+    })
+  }
 })
 
 // Start HTTP server with error handling
