@@ -9,17 +9,17 @@
   "boot": "auto",
   "init": false,
   "ports": {
-    "3000/tcp": 3000
+    "3535/tcp": 3535
   },
   "ports_description": {
-    "3000/tcp": "REST API endpoint for Home Assistant sensors"
+    "3535/tcp": "REST API endpoint for Home Assistant sensors"
   },
   "options": {
     "from_station": "Tullnerfeld Bahnhof",
     "to_station": "Wien Hbf",
     "departure_hour": 6,
     "departure_minute": 30,
-    "port": 3000
+    "port": 3535
   },
   "schema": {
     "from_station": "str",

@@ -97,7 +97,7 @@ sensor:
   # ÖBB Train Checker Sensors
   - platform: rest
     name: OEBB Trains
-    resource: http://localhost:3000/api/trains
+    resource: http://localhost:3535/api/trains
     scan_interval: 300
     json_attributes:
       - trains
@@ -115,7 +115,7 @@ sensor:
 
   - platform: rest
     name: OEBB Next Train
-    resource: http://localhost:3000/api/trains/next
+    resource: http://localhost:3535/api/trains/next
     scan_interval: 300
     json_attributes:
       - train
@@ -130,7 +130,7 @@ sensor:
 
   - platform: rest
     name: OEBB Next Train Line
-    resource: http://localhost:3000/api/trains/next
+    resource: http://localhost:3535/api/trains/next
     scan_interval: 300
     value_template: >
       {% if value_json and value_json.train and value_json.train.line %}
@@ -141,7 +141,7 @@ sensor:
 
   - platform: rest
     name: OEBB Next Train Departure
-    resource: http://localhost:3000/api/trains/next
+    resource: http://localhost:3535/api/trains/next
     scan_interval: 300
     value_template: >
       {% if value_json.train and value_json.train.departure.time %}
@@ -152,7 +152,7 @@ sensor:
 
   - platform: rest
     name: OEBB Next Train Delay
-    resource: http://localhost:3000/api/trains/next
+    resource: http://localhost:3535/api/trains/next
     scan_interval: 300
     unit_of_measurement: "min"
     value_template: >
@@ -164,7 +164,7 @@ sensor:
 
   - platform: rest
     name: OEBB Next Train Cancelled
-    resource: http://localhost:3000/api/trains/next
+    resource: http://localhost:3535/api/trains/next
     scan_interval: 300
     value_template: >
       {% if value_json and value_json.train and value_json.train.cancelled %}
@@ -175,7 +175,7 @@ sensor:
 
   - platform: rest
     name: OEBB Next Train Platform
-    resource: http://localhost:3000/api/trains/next
+    resource: http://localhost:3535/api/trains/next
     scan_interval: 300
     value_template: >
       {% if value_json and value_json.train and value_json.train.departure and value_json.train.departure.platform %}
@@ -186,7 +186,7 @@ sensor:
 
   - platform: rest
     name: OEBB Next Train Arrival
-    resource: http://localhost:3000/api/trains/next
+    resource: http://localhost:3535/api/trains/next
     scan_interval: 300
     value_template: >
       {% if value_json.train and value_json.train.arrival.time %}
