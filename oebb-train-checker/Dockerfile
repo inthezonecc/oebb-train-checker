@@ -20,11 +20,11 @@ COPY run.sh /etc/cont-init.d/99-run.sh
 RUN chmod +x /etc/cont-init.d/99-run.sh
 
 # Create service run script (runs continuously - env vars already set by cont-init.d)
-# For s6-overlay, use a simple service structure that outputs to stdout
+# Environment variables are set by init script, so we don't need with-contenv here
 RUN mkdir -p /etc/services.d/app && \
     cat > /etc/services.d/app/run << 'EOF'
-#!/usr/bin/with-contenv sh
-set -e
+#!/bin/sh
+exec 2>&1
 echo "[SERVICE] ========================================"
 echo "[SERVICE] Starting ÖBB Train Checker service..."
 echo "[SERVICE] ========================================"
