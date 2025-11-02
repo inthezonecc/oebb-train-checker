@@ -26,19 +26,24 @@ RUN mkdir -p /etc/services.d/app && \
            'echo "[SERVICE] ========================================"\n' \
            'echo "[SERVICE] Starting ÖBB Train Checker service..."\n' \
            'echo "[SERVICE] ========================================"\n' \
-           'cd /app\n' \
+           'cd /app || exit 1\n' \
            'echo "[SERVICE] Working directory: $(pwd)"\n' \
-           'echo "[SERVICE] Node version: $(node --version 2>&1)"\n' \
+           'echo "[SERVICE] Node version: $(node --version 2>&1 || echo "ERROR: node not found")"\n' \
            'echo "[SERVICE] Environment variables:"\n' \
-           'echo "[SERVICE]   FROM_STATION=${FROM_STATION}"\n' \
-           'echo "[SERVICE]   TO_STATION=${TO_STATION}"\n' \
-           'echo "[SERVICE]   PORT=${PORT}"\n' \
-           'echo "[SERVICE]   DEPARTURE_HOUR=${DEPARTURE_HOUR}"\n' \
-           'echo "[SERVICE]   DEPARTURE_MINUTE=${DEPARTURE_MINUTE}"\n' \
+           'echo "[SERVICE]   FROM_STATION=${FROM_STATION:-not set}"\n' \
+           'echo "[SERVICE]   TO_STATION=${TO_STATION:-not set}"\n' \
+           'echo "[SERVICE]   PORT=${PORT:-not set}"\n' \
+           'echo "[SERVICE]   DEPARTURE_HOUR=${DEPARTURE_HOUR:-not set}"\n' \
+           'echo "[SERVICE]   DEPARTURE_MINUTE=${DEPARTURE_MINUTE:-not set}"\n' \
            'echo "[SERVICE] Checking if oebb.js exists..."\n' \
-           'ls -la /app/oebb.js || echo "[SERVICE] ERROR: oebb.js not found!"\n' \
+           'if [ ! -f /app/oebb.js ]; then\n' \
+           '  echo "[SERVICE] ERROR: oebb.js not found!"\n' \
+           '  exit 1\n' \
+           'fi\n' \
+           'echo "[SERVICE] File exists: $(ls -la /app/oebb.js)"\n' \
            'echo "[SERVICE] Starting Node.js application..."\n' \
-           'exec node /app/oebb.js\n' \
+           'echo "[SERVICE] Node.js command: node /app/oebb.js"\n' \
+           'exec node /app/oebb.js 2>&1\n' \
     > /etc/services.d/app/run && \
     chmod +x /etc/services.d/app/run && \
     # Create finish script for proper service management
