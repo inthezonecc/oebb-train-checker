@@ -270,15 +270,34 @@ try {
   process.exit(1)
 }
 
+// Add error handlers to prevent silent crashes
+process.on('uncaughtException', (error) => {
+  console.error('ERROR: Uncaught Exception:', error)
+  console.error('Stack:', error.stack)
+  // Don't exit - keep server running
+})
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('ERROR: Unhandled Rejection at:', promise)
+  console.error('Reason:', reason)
+  // Don't exit - keep server running
+})
+
 // Schedule to run every weekday at configured time
 // Cron syntax: minute hour day-of-month month day-of-week
 cron.schedule(`${DEPARTURE_MINUTE} ${DEPARTURE_HOUR} * * 1-5`, async () => {
-  await checkTrains()
+  try {
+    await checkTrains()
+  } catch (error) {
+    console.error('ERROR in scheduled train check:', error)
+  }
 }, {
   timezone: 'Europe/Vienna' // Vienna timezone
 })
 
 // Run once immediately if it's a weekday
 if (isWeekday()) {
-  checkTrains().catch(console.error)
+  checkTrains().catch((error) => {
+    console.error('ERROR in initial train check:', error)
+  })
 }
