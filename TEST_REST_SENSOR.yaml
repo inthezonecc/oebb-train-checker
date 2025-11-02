@@ -1,0 +1,15 @@
+# Test REST Sensor - Use this to verify REST platform is working
+# Add this to your configuration.yaml under the sensor: section
+
+sensor:
+  # ... your existing sensors ...
+
+  # TEST SENSOR - Remove after testing
+  - platform: rest
+    name: Test REST Sensor
+    resource: http://httpbin.org/json
+    scan_interval: 60
+    value_template: "{{ value_json.slideshow.title | default('Test Working') }}"
+    json_attributes:
+      - slideshow
+
