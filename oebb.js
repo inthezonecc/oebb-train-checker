@@ -245,20 +245,30 @@ app.post('/api/trains/check', async (req, res) => {
   res.json(result)
 })
 
-// Start HTTP server
-app.listen(PORT, () => {
-  const timeStr = `${DEPARTURE_HOUR.toString().padStart(2, '0')}:${DEPARTURE_MINUTE.toString().padStart(2, '0')}`
-  console.log(`🚂 Train checker API server started!`)
-  console.log(`   From: ${FROM_STATION}`)
-  console.log(`   To: ${TO_STATION}`)
-  console.log(`   Departure time: ${timeStr}`)
-  console.log(`   Server running on http://localhost:${PORT}`)
-  console.log(`   API endpoint: http://localhost:${PORT}/api/trains`)
-  console.log(`   Next train: http://localhost:${PORT}/api/trains/next`)
-  console.log(`   Health check: http://localhost:${PORT}/health`)
-  console.log(`\nSchedule: Every weekday (Monday-Friday) at ${timeStr} (Vienna time)`)
-  console.log('Running initial check...\n')
-})
+// Start HTTP server with error handling
+try {
+  app.listen(PORT, '0.0.0.0', () => {
+    const timeStr = `${DEPARTURE_HOUR.toString().padStart(2, '0')}:${DEPARTURE_MINUTE.toString().padStart(2, '0')}`
+    console.log(`🚂 Train checker API server started!`)
+    console.log(`   From: ${FROM_STATION}`)
+    console.log(`   To: ${TO_STATION}`)
+    console.log(`   Departure time: ${timeStr}`)
+    console.log(`   Server running on http://0.0.0.0:${PORT}`)
+    console.log(`   API endpoint: http://localhost:${PORT}/api/trains`)
+    console.log(`   Next train: http://localhost:${PORT}/api/trains/next`)
+    console.log(`   Health check: http://localhost:${PORT}/health`)
+    console.log(`\nSchedule: Every weekday (Monday-Friday) at ${timeStr} (Vienna time)`)
+    console.log('Running initial check...\n')
+  }).on('error', (err) => {
+    console.error('ERROR: Failed to start server:', err)
+    console.error('Port:', PORT)
+    console.error('Error code:', err.code)
+    process.exit(1)
+  })
+} catch (error) {
+  console.error('ERROR: Failed to start server:', error)
+  process.exit(1)
+}
 
 // Schedule to run every weekday at configured time
 // Cron syntax: minute hour day-of-month month day-of-week
